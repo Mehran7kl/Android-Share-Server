@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:id="@+id/root"
+	android:orientation="vertical"
+	style="@style/AppTheme">
+
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Go"
+			android:id="@+id/search"
+			android:layout_alignParentEnd="true"
+			android:onClick="search"
+			android:textSize="10sp"
+			style="@style/AppTheme"/>
+
+		<EditText
+			android:focusedByDefault="false"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:id="@+id/searchField"
+			android:text="http://localhost:6655/"
+			android:textSize="8sp"
+			style="@style/AppTheme"
+			android:inputType="textUri"/>
+
+	</LinearLayout>
+
+	<WebView
+		android:layout_below="@id/search"
+		android:layout_height="300dp"
+		android:layout_width="match_parent"
+		android:id="@+id/webview"
+		style="@style/AppTheme"/>
+
+	<TextView
+		android:id="@+id/logView"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"/>
+
+</LinearLayout>
+
