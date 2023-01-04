@@ -60,23 +60,6 @@ public class MainActivity extends Activity
 			setLoader();
 			int port=6655;
 			startServer(port);
-
-
-			List<InetAddress> addrs=Server.getAddresses();
-			StringBuilder sb=new StringBuilder();
-			sb.append("port is: 6655\n");
-			for (InetAddress a:addrs)
-			{
-				if (a.isLoopbackAddress())continue;
-				sb.append("http://");
-				sb.append(a.getHostAddress());
-				sb.append(":");
-				sb.append(port);
-				sb.append("\n");
-			}
-
-
-			update(sb.toString());
 		}
 		catch (Throwable e)
 		{
@@ -84,8 +67,10 @@ public class MainActivity extends Activity
 		}
 	}
 
-	private void update(final String adrs)
+	public void update(final String adrs)
 	{
+		mainlayout=getLayoutInflater().inflate(R.layout.mainlayout,null);
+		
 		final View  view = mainlayout;
 
 
@@ -111,8 +96,11 @@ public class MainActivity extends Activity
 		view.setAlpha(0);
 		setContentView(view);
 		view.animate().alpha(1).setDuration(1000).start();
-
+		webview.post(new Runnable(){
+		public void run(){
 		webview.loadData(adrs.toString(), "text/plain", "utf8");
+		}
+		});
 		
 
     }
@@ -158,12 +146,12 @@ public class MainActivity extends Activity
 
 	private void setLoader()
 	{
-		//setContentView(R.layout.loader);
-		mainlayout = getLayoutInflater().inflate(R.layout.mainlayout, null);
+		setContentView(R.layout.loader);
+		
 	}
 
 
-	private void startServer(int port)throws IOException
+	private void startServer(int port)
 	{
 
 		serviceIntent = new Intent(this, ServerService.class);

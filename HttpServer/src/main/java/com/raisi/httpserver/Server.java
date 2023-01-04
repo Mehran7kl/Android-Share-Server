@@ -7,19 +7,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import android.os.HandlerThread;
+import android.os.Handler;
+import android.os.Looper;
 
 public class Server implements Runnable
 {
-	final boolean AsyncServer=false;
+	final public boolean AsyncServer=false;
 	ServerSocket ss;
 	RequestHandler reqHandler;
+
 	public Server(int port,RequestHandler handler)throws IOException{
 		ss=new ServerSocket(port);
 		reqHandler=handler;
 		ss.setReuseAddress(true);
 		
 	}
-
+	
 	@Override
 	public void run()
 	{
@@ -28,6 +32,7 @@ public class Server implements Runnable
 			try{
 			
 			socket=ss.accept();
+			
 			}catch(Throwable e){
 				Log.err(e);
 				continue;
@@ -36,10 +41,8 @@ public class Server implements Runnable
 			
 			
 			Session s=new Session(socket,reqHandler);
-			
-			if(AsyncServer)new Thread(s).start();
+			if(AsyncServer) new Thread(s).start();
 			else s.run();
-			
 			}catch(Throwable e){
 				Log.err(e);
 			}
