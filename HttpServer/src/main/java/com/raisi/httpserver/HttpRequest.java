@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.SocketException;
 
 
 public class HttpRequest extends HttpMessage
@@ -26,6 +27,8 @@ public class HttpRequest extends HttpMessage
 			if(!line.isEmpty()){ 
 				sb.append(line);
 				sb.append('\n');
+				if(sb.length()>100000) throw new IllegalStateException("didnt get end of request yet");
+				
 			}
 		}while(!line.isEmpty());
 		
@@ -41,7 +44,10 @@ public class HttpRequest extends HttpMessage
 			c=in.read();
 			if(c=='\r')continue;
 			if(c=='\n')break;
-			
+			//I get some errors here 
+			// These are some efforts to query errors
+			if(c<0) throw new SocketException("Reached negative response. Seems Socket is already closed");
+			if(sb.length()>1000)throw new IllegalStateException("didnt get end of line yet");
 			sb.append((char)c);
 		}
 		

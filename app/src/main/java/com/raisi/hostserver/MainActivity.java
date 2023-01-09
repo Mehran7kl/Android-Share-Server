@@ -31,6 +31,11 @@ import android.os.Process;
 import android.content.Intent;
 import com.raisi.httpserver.Log;
 import android.net.Uri;
+import android.webkit.DownloadListener;
+import android.app.DownloadManager;
+import java.net.URL;
+import android.webkit.URLUtil;
+import android.text.method.MovementMethod;
 
 
 
@@ -87,6 +92,17 @@ public class MainActivity extends Activity
 
 		webview.setWebViewClient(new WebViewClient());
 		webview.setWebChromeClient(new WebChromeClient()); 
+		webview.setDownloadListener(new DownloadListener(){
+			@Override
+			public void onDownloadStart(String uri, String userAgent,
+			String contentDisposition,
+			String mimeType, long length){
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				
+        		i.setData(Uri.parse(uri));
+        		startActivity(i);
+			}
+		});
 		webview.getSettings().setSupportZoom(true);
 		webview.getSettings().setDisplayZoomControls(false);
 		webview.getSettings().setBuiltInZoomControls(true);
@@ -98,6 +114,7 @@ public class MainActivity extends Activity
 		view.animate().alpha(1).setDuration(1000).start();
 		webview.post(new Runnable(){
 		public void run(){
+			
 		webview.loadData(adrs.toString(), "text/plain", "utf8");
 		}
 		});
@@ -198,6 +215,9 @@ public class MainActivity extends Activity
 				public void run()
 				{
 					TextView  text=currentContext.findViewById(R.id.logView);
+					if(text.getMovementMethod()==null)
+						text.setMovementMethod((new ScrollingMovementMethod()));
+					
 					text.append(e);
 					//currentContext.setContentView(text);
 					//currentContext.freezeDueEroor = true;
