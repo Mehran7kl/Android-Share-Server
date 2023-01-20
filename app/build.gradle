@@ -8,8 +8,8 @@ android {
         applicationId "com.raisi.hostserver"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 2
-        versionName "1.0.1-beta"
+        versionCode 1001000
+        versionName "1.1.0-beta"
     }
     buildTypes {
         release {

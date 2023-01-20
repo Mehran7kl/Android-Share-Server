@@ -38,6 +38,7 @@ public class ServerService extends IntentService
 			sb.append(":");
 			sb.append(port);
 			sb.append("\n");
+			
 		}
 		
 		cx.runOnUiThread(new Runnable(){

@@ -13,7 +13,7 @@ import android.os.Looper;
 
 public class Server implements Runnable
 {
-	final public boolean AsyncServer=false;
+	final public boolean AsyncServer=true;
 	ServerSocket ss;
 	RequestHandler reqHandler;
 
