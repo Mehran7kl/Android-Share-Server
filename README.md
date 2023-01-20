@@ -14,7 +14,7 @@ It's based on pure sockets and has no library nor any dependency.
 - [ ] Query to how continue downloading a stopped file.
 - [ ] Provide an upload form.
 
-##Notes 
+## Notes 
 
 - You may not Download anything in tge app itself. Try in a browser instead.
 
