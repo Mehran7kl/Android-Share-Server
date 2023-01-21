@@ -2,6 +2,7 @@
 
 An Android application which provides a server in local network and other clients can connect 
 through their browsers and donwload files and APKs.
+You can download APK in [here](https://github.com/Mehran7kl/Android-Share-Server/releases).
 This is a practice to learn how Http works.
 It's based on pure sockets and has no library nor any dependency.
 
