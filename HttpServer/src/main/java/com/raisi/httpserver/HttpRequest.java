@@ -7,27 +7,31 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.SocketException;
+import java.util.Optional;
+import java.io.BufferedInputStream;
 
 
 public class HttpRequest extends HttpMessage
 {
 	private String source,method,path;
+	private StringBuilder sourceCon=new StringBuilder();
 	public HttpRequest(CharSequence src)
 	{
 		source=src.toString();
 		compileSource();
+		
 	}
 	
 	public HttpRequest(InputStream in)throws IOException
 	{
-		StringBuffer sb=new StringBuffer();
+		StringBuilder sb=sourceCon;
 		String line;
 		do{
 			line=readLine(in);
 			if(!line.isEmpty()){ 
 				sb.append(line);
 				sb.append('\n');
-				if(sb.length()>100000) throw new IllegalStateException("didnt get end of request yet");
+				if(sb.length()>100000) throw new IllegalStateException("didnt get end of request yet: last input-> "+sb.substring(sb.length()-64));
 				
 			}
 		}while(!line.isEmpty());
@@ -40,15 +44,20 @@ public class HttpRequest extends HttpMessage
 		StringBuilder sb=new StringBuilder();
 		
 		int c;
+		int lc=-1;
 		while(true){
 			c=in.read();
-			if(c=='\r')continue;
-			if(c=='\n')break;
+			if(c=='\r'){
+				lc=c;
+				continue;
+			}
+			if(c=='\n'||lc=='\r')break;
 			//I get some errors here 
 			// These are some efforts to query errors
-			if(c<0) throw new SocketException("Reached negative response. Seems Socket is already closed");
-			if(sb.length()>1000)throw new IllegalStateException("didnt get end of line yet");
+			if(c<0) throw new SocketException("Reached negative response. Seems Socket is already closed; last input->\n"+sb+"\nwhole of taken request->\n"+sourceCon);
+			if(sb.length()>1000)throw new IllegalStateException("didnt get end of line yet; last input->\n"+sb+"\nwhole of taken request->\n"+sourceCon);
 			sb.append((char)c);
+			lc=c;
 		}
 		
 		return sb.toString();

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 
 public class Session implements Runnable, AutoCloseable
 {
@@ -25,6 +27,8 @@ public class Session implements Runnable, AutoCloseable
 	private void init()throws IOException{
 		in=socket.getInputStream();
 		out=socket.getOutputStream();
+		in=new BufferedInputStream(in);
+		out=new BufferedOutputStream(out);
 		
 	}
 	
@@ -43,9 +47,16 @@ public class Session implements Runnable, AutoCloseable
 			read();
 			
 			hanler.handleRequest(request,in,out);
-			close();
+			out.flush();
 		}catch(Throwable e){
 			Log.err(e);
+			
+		}
+		try{
+			close();
+		}catch(Throwable t)
+		{
+			Log.err(t);
 		}
 	}
 
