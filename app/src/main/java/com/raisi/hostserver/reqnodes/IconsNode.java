@@ -12,7 +12,7 @@ public class IconsNode extends PathNode
 {
 
 	@Override
-	public boolean handle(List<String> path, HttpRequest req, InputStream in, OutputStream out)
+	public int handle(List<String> path, HttpRequest req, InputStream in, OutputStream out)
 	{
 		if(path.size()>0){
 		Locale.setDefault(Locale.US);
@@ -22,15 +22,15 @@ public class IconsNode extends PathNode
 		
 		addChild(id,new IconNode(Integer.valueOf(id)));
 		
-		}else return false;
+		}else return NOT_FOUND;
 		return super.handle(path, req, in, out);
 	}
 
 	@Override
-	public boolean handle(HttpRequest req, InputStream in, OutputStream out)
+	public int handle(HttpRequest req, InputStream in, OutputStream out)
 	{
 		// TODO: Implement this method
-		return false;
+		return NOT_FOUND;
 	}
 
 	

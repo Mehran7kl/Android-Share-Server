@@ -1,17 +1,15 @@
 package com.raisi.hostserver;
-import android.content.Context;
 import com.raisi.hostserver.reqnodes.PathNode;
 import com.raisi.httpserver.HttpRequest;
 import com.raisi.httpserver.HttpResponde;
+import com.raisi.httpserver.Log;
 import com.raisi.httpserver.RequestHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.net.URLDecoder;
-import com.raisi.httpserver.Server;
-import com.raisi.httpserver.Log;
 
 public class ServerRequestHandler implements RequestHandler
 {
@@ -30,36 +28,74 @@ public class ServerRequestHandler implements RequestHandler
 	@Override
 	public void handleRequest(HttpRequest r,InputStream i ,OutputStream o)
 	{
-		try{
+		
 		request=r;
 		in=i;
 		out=o;
-		if(BuildConfig.DEBUG)System.out.println(r.getSource());
+		
 		observer();
-		}catch(Throwable e){
-			Log.err(e);
-		}
+		
+		
 	}
 	
 	
-	private void observer()throws IOException{
+	private void observer()
+	{
 		String[] arr=request.getPath().split("/");
 		
 		List<String> list=new ArrayList<>();
 		for(int i=1;i<arr.length;i++){
 			list.add(URLDecoder.decode(arr[i]));
 		}
-		boolean handled=rootNode.handle(list,request,in,out);
-		if(!handled)notFound();
+		
+		int handled=rootNode.handle(list,request,in,out);
+		if(handled==PathNode.OK){
+			try{
+				out.flush();
+			}catch(IOException e){
+				Log.err(e.toString());
+			}
+		}
+		if(handled==PathNode.NOT_FOUND){
+			notFound();
+			try{
+				out.flush();
+			}catch(IOException e){
+				Log.err(e.toString());
+			}
+		}
+		else if(handled==PathNode.ERROR){
+			internalError();
+			try{
+				//Do I need this when an error happens in the handler?
+				//Maybe better to even not flush it. Because probably socket maybe closed already
+				out.flush();
+			}catch(IOException e){
+				Log.info(e.toString());
+			}
+		}
+		
 	}
 	
-	private void notFound()throws IOException{
+	private void notFound(){
 		HttpResponde p=new HttpResponde();
 		p.setStatus(p.NOTF);
+		try{
 		out.write(p.getSourceBytes());
+		}catch(IOException e){
+			Log.err(e);
+		}
 	}
 	
-	
+	private void internalError(){
+		HttpResponde p=new HttpResponde();
+		p.setStatus(p.NOTF);
+		try{
+			out.write(p.getSourceBytes());
+		}catch(IOException e){
+			Log.info(e.toString());
+		}
+	}
 	
 	
 }

@@ -11,9 +11,12 @@ public abstract class PathNode
 {
 	protected Map<String,PathNode> childs=new HashMap<>();
 	
+	public static int
+		OK=0,
+		NOT_FOUND=-1,
+		ERROR=-2;
 	
-	
-	public boolean handle(List<String> path, HttpRequest req, InputStream in, OutputStream out)
+	public int handle(List<String> path, HttpRequest req, InputStream in, OutputStream out)
 	{
 		if(path.size()>0){
 			
@@ -21,7 +24,7 @@ public abstract class PathNode
 			path.remove(0);
 			PathNode nextNode = childs.get(next);
 			
-			if(nextNode==null)return false;
+			if(nextNode==null)return NOT_FOUND;
 			
 			return nextNode.handle(path,req,in,out);
 		}else{
@@ -30,7 +33,7 @@ public abstract class PathNode
 	}
 	
 	
-	public abstract boolean handle(HttpRequest req, InputStream in, OutputStream out);
+	public abstract int handle(HttpRequest req, InputStream in, OutputStream out);
 	
 	
 	public void addChild(String p,PathNode n){

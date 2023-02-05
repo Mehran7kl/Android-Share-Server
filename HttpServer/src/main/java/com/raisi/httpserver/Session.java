@@ -17,11 +17,14 @@ public class Session implements Runnable, AutoCloseable
 	private HttpRequest request;
 	private RequestHandler hanler;
 	
-	public Session(Socket s,RequestHandler h)throws SocketException{
+	public Session(Socket s,RequestHandler h){
 		socket=s;
 		hanler=h;
+		try{
 		s.setKeepAlive(true);
-		
+		}catch(SocketException e){
+			Log.info(s.toString());
+		}
 	}
 	
 	private void init()throws IOException{
@@ -41,22 +44,23 @@ public class Session implements Runnable, AutoCloseable
 	@Override
 	synchronized public void run()
 	{
+		//No exception may raise to thread
 		try{
 			
 			init();
 			read();
 			
 			hanler.handleRequest(request,in,out);
-			out.flush();
+			
+			
 		}catch(Throwable e){
 			Log.err(e);
-			
 		}
 		try{
 			close();
 		}catch(Throwable t)
 		{
-			Log.err(t);
+			Log.info(t.toString());
 		}
 	}
 

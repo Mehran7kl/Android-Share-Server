@@ -1,29 +1,38 @@
 package com.raisi.hostserver;
-import java.io.InputStream;
-import java.io.FileReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.IOException;
 import android.content.res.AssetFileDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
+import com.raisi.httpserver.Log;
+import android.content.res.AssetManager.AssetInputStream;
+import android.content.res.AssetManager;
+import java.nio.ByteBuffer;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.Scanner;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Utils
 {
-	public static String readRawString(int id)throws IOException{
-		String str;
-
+	private static Map<Integer,String> cache=new TreeMap<>();
+	
+	public static String readRawString(int id)throws IOException
+	{
+		String cached=cache.get(id);
+		if(cached!=null) return cached;
 		
-		InputStream in=MainActivity.currentContext.getResources().openRawResource(id);
+		InputStream in= MainActivity.currentContext.getResources(). openRawResource(id);
+		StringBuilder sb=new StringBuilder();
+		Scanner sc=new Scanner(in);
 		
-		int length= in.available();
-		if(length>1024*10)throw new IllegalArgumentException("large file size");
+		while(sc.hasNextLine()){
+			sb.append(sc.nextLine());
+		}
 		
+		String content=sb.toString();
 		
-		byte[] buf=new byte[length];
-		
-		in.read(buf);
-		
-		str=new String(buf);
-		
-		return str;
+		cache.put(id,content);
+		in.close();
+		return content;
 	}
 }

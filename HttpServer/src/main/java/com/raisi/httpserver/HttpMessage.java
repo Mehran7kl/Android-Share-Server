@@ -1,20 +1,16 @@
 package com.raisi.httpserver;
 
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
-import java.util.Set;
-import org.apache.commons.codec.Charsets;
-import java.util.Scanner;
-import java.nio.charset.*;
-import java.io.*;
-import android.util.Log;
-import java.util.logging.Logger;
-import android.util.LogPrinter;
+import java.util.Map;
+import java.nio.file.FileSystem;
+
 public abstract class HttpMessage
 {
 	public static final String
 	OK="200 OK", FORB="403 Forbidden",NOTF="404 Not Found",
+	PARTIAL="206 Partial Content",
 	
 	GIFm="image/gif",
 	PLAINm="text/plain",
@@ -26,17 +22,24 @@ public abstract class HttpMessage
 	SVGm="image/svg+xml",
 	MP4m="video/mp4",
 	BINm="application/octet-stream",
-	
+	MULTIPART_BYTERANGEm="multipart/byteranges",
 	CONNECTION="Connection",
 	KEEP_ALIVE="Keep-Alive",
 	CONTENT_TYPE="Content-Type",
+	CONTENT_RANGE="Content-Range",
+	LAST_MODIFIED="Last-Modified",
 	CONTENT_LENGTH="Content-Length",
+	RANGE="Range",
+	ACCEPT_RANGE="Accept-Range",
 	DATE="Date",
 	SEC_FETCH_MODE="Sec-Fetch-Mode",
+	
 	SEC_FETCH_DEST="Sec-Fetch-Dest",
 	VIDEO_DEST="video",
 	DOC_DEST="document",
+	EMPTY_DEST="empty",
 	IMG_DEST="image";
+	
 	protected Map<String,String> headers=new HashMap<>();
 	
 	protected String version="HTTP/1.1";
@@ -61,6 +64,7 @@ public abstract class HttpMessage
 	
 	public byte[] getSourceBytes(){
 		try{
+			
 		return getSource().getBytes("utf8");
 		}catch(UnsupportedEncodingException e){}
 		return null;
@@ -70,6 +74,7 @@ public abstract class HttpMessage
 		
 		String path=f.getAbsolutePath();
 		int lastdot=path.lastIndexOf(".");
+		if(lastdot==-1)return HttpResponde.BINm;
 		String ext=path.substring(lastdot+1,path.length());
 		
 		String mime;

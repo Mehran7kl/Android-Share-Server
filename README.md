@@ -8,11 +8,8 @@ It's based on pure sockets and has no library nor any dependency.
 ### Roadmap
 
 - [x] Add a loading page while server is being built.
-- [x] Add async responsing feature (beta).
-- [ ] Add support of "range" Http header. 
-- [ ] Add support for partial content responsing.
-- [ ] Query to how continue downloading a stopped file.
-- [ ] Provide an upload form.
+- [x] Add async responsing feature.
+- [x] Add support for Partial Content Responsing. (An important feature that is required in many browser interactions)
 
 ## Notes 
 

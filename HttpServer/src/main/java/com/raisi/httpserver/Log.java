@@ -17,10 +17,10 @@ public class Log
 	Ilisteners=new ArrayList<>();
 	public static void addListener(Listener l, int filter)
 	{
-		if((ERROR_LEVEL&filter)==1)Elisteners.add(l);
-		if((ASSERT_LEVEL&filter)==1)Alisteners.add(l);
-		if((DEBUG_LEVEL&filter)==1)Dlisteners.add(l);
-		if((INFO_LEVEL&filter)==1)Ilisteners.add(l);
+		if((ERROR_LEVEL&filter)==ERROR_LEVEL)Elisteners.add(l);
+		if((ASSERT_LEVEL&filter)==ASSERT_LEVEL)Alisteners.add(l);
+		if((DEBUG_LEVEL&filter)==DEBUG_LEVEL)Dlisteners.add(l);
+		if((INFO_LEVEL&filter)==INFO_LEVEL)Ilisteners.add(l);
 		
 	}
 	public static void info(String s){

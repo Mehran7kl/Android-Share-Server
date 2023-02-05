@@ -10,17 +10,24 @@ import java.util.List;
 import android.os.HandlerThread;
 import android.os.Handler;
 import android.os.Looper;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Server implements Runnable
 {
-	final public boolean AsyncServer=true;
+	
 	ServerSocket ss;
 	RequestHandler reqHandler;
-
+	
+	//Will throw IOException in failure to create ServerSocket
 	public Server(int port,RequestHandler handler)throws IOException{
 		ss=new ServerSocket(port);
 		reqHandler=handler;
-		ss.setReuseAddress(true);
+		try{
+			ss.setReuseAddress(true);
+		}catch(SocketException e){
+			Log.d(e.toString());
+		}
 		
 	}
 	
@@ -33,19 +40,16 @@ public class Server implements Runnable
 			
 			socket=ss.accept();
 			
-			}catch(Throwable e){
-				Log.err(e);
+			}catch(IOException e){
+				Log.info(e.toString());
 				continue;
 			}
-			try{
 			
 			
 			Session s=new Session(socket,reqHandler);
-			if(AsyncServer) new Thread(s).start();
-			else s.run();
-			}catch(Throwable e){
-				Log.err(e);
-			}
+			new Thread(s).start();
+			
+			
 		}
 		
 	}

@@ -19,9 +19,9 @@ public class IconNode extends PathNode
 	}
 
 	@Override
-	public boolean handle(HttpRequest req, InputStream in, OutputStream out)
+	public int handle(HttpRequest req, InputStream in, OutputStream out)
 	{
-		try{
+		
 		String type;
 			switch(id){
 				case R.raw.folder_icon:
@@ -40,16 +40,14 @@ public class IconNode extends PathNode
 		AssetFileDescriptor fd= MainActivity.currentContext.getResources().openRawResourceFd(id);
 		int length =(int) fd.getLength();
 		responde.setHeader(HttpMessage.CONTENT_LENGTH,""+length);
-		
+		try{
 		out.write(responde.getSourceBytes());
-		
-		FileNode.readFileWriteBuffer(fd.createInputStream(),out,length);
-		
-		return true;
+		FileNode.readChunkWriteBuffer(0,length,fd.createInputStream(),out);
+		return OK;
 		}catch(IOException e){
 			
 			Log.err(e);
-			return false;
+			return ERROR;
 		}
 		
 	}

@@ -1,41 +1,26 @@
 package com.raisi.hostserver;
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.raisi.hostserver.reqnodes.NodeTreeFactory;
+import com.raisi.httpserver.Log;
 import com.raisi.httpserver.RequestHandler;
-import com.raisi.httpserver.Server;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import android.widget.LinearLayout;
-import java.net.SocketException;
-import java.net.InetAddress;
-import java.util.List;
-import android.widget.Toast;
-import android.view.LayoutInflater;
-import android.os.Process;
-import android.content.Intent;
-import com.raisi.httpserver.Log;
-import android.net.Uri;
-import android.webkit.DownloadListener;
-import android.app.DownloadManager;
-import java.net.URL;
-import android.webkit.URLUtil;
-import android.text.method.MovementMethod;
+import java.util.Locale;
 
 
 
@@ -47,35 +32,35 @@ public class MainActivity extends Activity
 	Thread st;
 	Intent serviceIntent;
 	RequestHandler requestHandler;
+	
 	private static WebView webview;
 	public static volatile MainActivity currentContext;
 	EditText searchField;
 	static File rootDir;
-
+	
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
 		super.onCreate(savedInstanceState);
-		initStatics();
+		initStaticVars();
 		try
 		{
+			
+			Locale.setDefault(Locale.US);
 			setDebuggerFile("debug/log.txt");
-
-
 			setLoader();
 			int port=6655;
 			startServer(port);
 		}
 		catch (Throwable e)
 		{
-			showError(e);
+			Log.err(e);
 		}
 	}
-
-	public void update(final String adrs)
+	public void initView()
 	{
 		mainlayout=getLayoutInflater().inflate(R.layout.mainlayout,null);
-		
+
 		final View  view = mainlayout;
 
 
@@ -87,41 +72,54 @@ public class MainActivity extends Activity
 		searchField = view.findViewById(R.id.searchField);
 		searchButton = view.findViewById(R.id.search);
 		webview = view.findViewById(R.id.webview);
-
+		
+		
 		//configuring webview
 
 		webview.setWebViewClient(new WebViewClient());
 		webview.setWebChromeClient(new WebChromeClient()); 
 		webview.setDownloadListener(new DownloadListener(){
-			@Override
-			public void onDownloadStart(String uri, String userAgent,
-			String contentDisposition,
-			String mimeType, long length){
-				Intent i = new Intent(Intent.ACTION_VIEW);
-				
-        		i.setData(Uri.parse(uri));
-        		startActivity(i);
-			}
-		});
+				@Override
+				public void onDownloadStart(String uri, String userAgent,
+											String contentDisposition,
+											String mimeType, long length){
+					Intent i = new Intent(Intent.ACTION_VIEW);
+
+					i.setData(Uri.parse(uri));
+					startActivity(i);
+				}
+			});
 		webview.getSettings().setSupportZoom(true);
 		webview.getSettings().setDisplayZoomControls(false);
 		webview.getSettings().setBuiltInZoomControls(true);
 		WebSettings webs=webview.getSettings();
 		webs.setJavaScriptEnabled(true);
-		
+
 		view.setAlpha(0);
 		setContentView(view);
 		view.animate().alpha(1).setDuration(1000).start();
+		
+	}
+	
+	public void updateWebView(final String adrs)
+	{
 		webview.post(new Runnable(){
 		public void run(){
-			
-		webview.loadData(adrs.toString(), "text/plain", "utf8");
-		}
-		});
+			webview.loadData(adrs, "text/plain", "utf8");
+		}});
 		
 
     }
+/*
+Exception handling rules:
 
+1. Don't let an exception raise to system otherwise App will crash.
+2. Report unusual exceptoins by Log.err
+3. Report usual IO exceptions by Log.info
+4. Don't let control flow to continue in bad state by ignoring an exception
+5. Use Log.debug to report output
+
+*/
 	private void setDebuggerFile(String logfile)throws IOException
 	{
 		if (BuildConfig.DEBUG)
@@ -138,7 +136,7 @@ public class MainActivity extends Activity
 					@Override
 					public void uncaughtException(Thread th, Throwable err)
 					{
-						err.printStackTrace(System.out);
+						System.out.println(err);
 					}
 				});
 		}
@@ -146,15 +144,38 @@ public class MainActivity extends Activity
 		Log.addListener(new Log.Listener(){
 				public void onLog(String s)
 				{
+					synchronized(System.out){
+					try{
 					showError(s);
+					}finally{
+					System.out.println(s);
+					}
+					}
 				}
 			}, Log.ERROR_LEVEL);
+		Log.addListener(new Log.Listener(){
+				public void onLog(String s)
+				{
+					synchronized(System.out){
+					System.out.println(s);
+					}
+				}
+			}, Log.INFO_LEVEL);
+		Log.addListener(new Log.Listener(){
+				public void onLog(String s)
+				{
+					synchronized(System.out){
+					System.out.println(s);
+					}
+				}
+			}, Log.DEBUG_LEVEL);
+		
 	}
 
 
 
 
-	private void initStatics()
+	private void initStaticVars()
 	{
 		currentContext = this;
 		rootDir = Environment.getExternalStorageDirectory();
@@ -164,7 +185,6 @@ public class MainActivity extends Activity
 	private void setLoader()
 	{
 		setContentView(R.layout.loader);
-		
 	}
 
 
@@ -175,26 +195,31 @@ public class MainActivity extends Activity
 		serviceIntent.putExtra("port", port);
 		startService(serviceIntent);
 	}
-
-
+	
+	//This is a listener
 	public void search(View v)
 	{
+		//I dont let an exception raise here;
+		//If so, app will crash
 		try
 		{
 			webview.loadUrl(searchField.getText().toString());
 		}
 		catch (Throwable e)
-		{showError(e);}
+		{	
+			Log.err(e);
+		}
 	}
 
 
 	@Override
 	public void onBackPressed()
 	{
-		if (webview.canGoBack())webview.goBack();
+		if (webview.canGoBack())
+			webview.goBack();
 		else super.onBackPressed();
 	}
-	boolean freezeDueEroor;
+	
 	public static synchronized void showError(final Throwable e)
 	{
 		currentContext.runOnUiThread(new Runnable(){
@@ -204,33 +229,27 @@ public class MainActivity extends Activity
 					text.append(e.toString() + System.lineSeparator());
 					for (StackTraceElement ele:e.getStackTrace())text.append(ele.toString() + System.lineSeparator());
 					currentContext.setContentView(text);
-					currentContext.freezeDueEroor = true;
 				}
 			});
 	}
 	public static synchronized void showError(final String e)
 	{
-	
-		currentContext.runOnUiThread(new Runnable(){
+		if(currentContext.mainlayout!=null)
+			currentContext.runOnUiThread(new Runnable(){
 				public void run()
 				{
 					TextView  text=currentContext.findViewById(R.id.logView);
+					
 					if(text.getMovementMethod()==null)
 						text.setMovementMethod((new ScrollingMovementMethod()));
 					
 					text.append(e);
-					//currentContext.setContentView(text);
-					//currentContext.freezeDueEroor = true;
+					
 				}
 			});
-		
+		else System.out.println(e);
 	}
-	@Override
-	public void setContentView(View view)
-	{
-		//if (freezeDueEroor)return;
-		super.setContentView(view);
-	}
+	
 
 	@Override
 	protected void onDestroy()

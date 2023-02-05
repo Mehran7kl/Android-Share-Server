@@ -13,14 +13,14 @@ public class NodeTreeFactory
 		RootNode root=new RootNode();
 		PathNode fileTree=new FileNode(){
 			@Override
-			public boolean handle(List<String> path,HttpRequest req,InputStream in ,OutputStream out){
+			public int handle(List<String> path,HttpRequest req,InputStream in ,OutputStream out){
 				
 				File f=Environment.getExternalStorageDirectory();
 				PathNode node=this;
 				for(String i:path){
 					i=URLDecoder.decode(i);
 					f=new File(f,i);
-					if(!f.exists())return false;
+					if(!f.exists())return NOT_FOUND;
 					PathNode newNode=new FileNode();
 					node.addChild(i,newNode);
 					node=newNode;
@@ -32,7 +32,7 @@ public class NodeTreeFactory
 		root.addChild("files",fileTree);
 		root.addChild("icons",new IconsNode());
 		root.addChild("apps",new AppsNode());
-	
+		
 		return root;
 	}
 }

@@ -17,6 +17,8 @@ import com.raisi.hostserver.R;
 import android.content.pm.PackageManager;
 import com.raisi.httpserver.Server;
 import com.raisi.hostserver.Utils;
+import com.raisi.httpserver.Log;
+import java.io.UnsupportedEncodingException;
 
 public class AppsNode extends PathNode
 {
@@ -44,10 +46,15 @@ public class AppsNode extends PathNode
 	
 
 	@Override
-	public boolean handle(HttpRequest req, InputStream in, OutputStream out)
+	public int handle(HttpRequest req, InputStream in, OutputStream out)
 	{
+		String htmlFormat=null;
 		try{
-		String htmlFormat=Utils.readRawString(R.raw.dirlist);
+		htmlFormat=Utils.readRawString(R.raw.dirlist);
+		}catch(IOException e){
+			Log.err(e);
+			return ERROR;
+		}
 		String linkFormat="<a href='/apps/%s.apk'>%s</a><br/>\n";
 		
 		StringBuilder links=new StringBuilder();
@@ -59,21 +66,24 @@ public class AppsNode extends PathNode
 
 		}
 		String html=String.format(htmlFormat,links);
-		byte[] buffer=html.getBytes("utf8");
-
+		byte[] buffer=null;
+		try{
+		buffer=html.getBytes("utf8");
+		}catch(UnsupportedEncodingException e){Log.err(e);return ERROR;}
 		HttpResponde message=new HttpResponde();
 		message.setStatus(HttpResponde.OK);
 		message.setHeader(HttpResponde.CONNECTION,HttpResponde.KEEP_ALIVE);
 		message.setHeader(HttpResponde.CONTENT_TYPE,HttpResponde.HTMLm);
 		message.setHeader(HttpResponde.CONTENT_LENGTH,""+buffer.length);
-		
+		try{
 		out.write(message.getSourceBytes());
-		
 		out.write(buffer);
-		return true;
+		
 		}catch(IOException e){
-			return false;
+			Log.err(e);
+			return ERROR;
 		}
+		return OK;
 	}
 
 	
