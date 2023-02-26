@@ -3,11 +3,11 @@ package com.raisi.httpserver;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.List;
-import java.util.ArrayList;
 
 
 public class HttpRequest extends HttpMessage
@@ -38,7 +38,15 @@ public class HttpRequest extends HttpMessage
 		String line;
 		do{
 			line=din.readLine();
-			
+			if(line==null){
+				try
+				{
+					Thread.sleep(100);
+				}
+				catch (InterruptedException e)
+				{}
+				continue;
+			}
 			if(!line.isEmpty()){ 
 				sb.append(line);
 				sb.append(System.lineSeparator());

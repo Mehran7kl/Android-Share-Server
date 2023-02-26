@@ -170,6 +170,7 @@ public class FileNode extends PathNode
 		if(isForDocument())
 		{
 			try{
+				
 				out.write(message.getSourceBytes());
 			}catch(IOException e){
 				Log.err(e);
@@ -184,10 +185,16 @@ public class FileNode extends PathNode
 			Log.err(e);
 			return ERROR;
 		}
-		try{
 		//Client may refuse to download file; so this code sometimes throws exceptions that is usual.
-		InputStream in= Files.newInputStream( f.toPath());
-		readChunkWriteBuffer(writeOffset,writeLength,in,out);
+		try{
+		//Use optimized java method; Browser will close it at the end of the range.
+		if(offset<1){
+			Files.copy(f.toPath(),out);
+		}
+		else{
+			InputStream in= Files.newInputStream( f.toPath());
+			readChunkWriteBuffer(writeOffset,writeLength,in,out);
+		}
 		}catch(Exception e){
 			reportErrorOnSendingBody(e);
 		}
@@ -207,6 +214,7 @@ public class FileNode extends PathNode
 	
 	public static void readChunkWriteBuffer(int chunkOffset, int chunkLength, InputStream in,OutputStream out)throws IOException{
 		int fh=1024*64;//64KB
+		
 		in.skip(chunkOffset);
 		byte[] b=new byte[fh];
 		while(chunkLength!=0){
